@@ -233,7 +233,8 @@ class BasePPOTrainer(ABC):
             all_labels = []
             prompt_to_datasource = {}  # Dictionary to store mapping between prompts and their data sources
 
-            for datasources, prompts, labels in eval_dataloader:
+            for data_configs, prompts, labels, _ in eval_dataloader:
+                datasources = [data_config["source"] for data_config in data_configs]
                 all_prompts.extend(prompts)
                 all_labels.extend(labels)
                 # Create mapping for each prompt to its corresponding data source
@@ -321,7 +322,15 @@ class BasePPOTrainer(ABC):
 
         # Create train dataset
         train_data = train_data.select(range(min(args.max_samples, len(train_data))))
-        prompts_dataset = PromptDataset(train_data, self.tokenizer, strategy, input_template=args.input_template)
+        prompts_dataset = CustomPromptDataset(
+            train_data,
+            self.tokenizer,
+            strategy,
+            input_template=args.input_template,
+            max_length=self.prompt_max_len,
+        )
+
+        # prompts_dataset = PromptDataset(train_data, self.tokenizer, strategy, input_template=args.input_template)
         prompts_dataloader = strategy.setup_dataloader(
             prompts_dataset,
             args.vllm_generate_batch_size,
