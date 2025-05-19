@@ -140,6 +140,7 @@ class Samples:
         self.labels = labels or []
         self.rewards = rewards or []
         self.packed_seq_lens = packed_seq_lens
+        self.data_configs = data_configs
 
 
 class SamplesGenerator:
