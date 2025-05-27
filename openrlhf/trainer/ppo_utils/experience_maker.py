@@ -140,8 +140,6 @@ class Samples:
         self.labels = labels or []
         self.rewards = rewards or []
         self.packed_seq_lens = packed_seq_lens
-        self.data_configs = data_configs
-
 
 class SamplesGenerator:
     def __init__(self, vllm_engines, strategy, tokenizer, prompt_max_len):
