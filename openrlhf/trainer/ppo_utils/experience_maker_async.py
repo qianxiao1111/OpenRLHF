@@ -149,12 +149,13 @@ class SamplesGeneratorAsync(SamplesGenerator):
                     labels=current_batch_labels,
                     rewards=current_batch_rewards,
                 )
-                samples_list.append(rollout_samples)
-
+                if self.filter_batch_samples(rollout_samples):
+                    # Append the processed batch to the samples list
+                    samples_list.append(rollout_samples)
                 # Reset batch
                 current_batch = []
                 current_batch_prompts = []
                 current_batch_labels = []
                 current_batch_rewards = []
-
+        print(f"Generated {len(samples_list)} valid samples from {len(all_outputs)} outputs.")
         return samples_list

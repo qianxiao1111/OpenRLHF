@@ -191,6 +191,12 @@ class SamplesGenerator:
         )
         return {k: v.to(device) for k, v in batch.items()}
 
+    def filter_batch_samples(self, samples: List[Samples]) -> List[Samples]:
+        mean_reward = samples.rewards.mean().item()
+        if mean_reward <= 0. or mean_reward >= 1.:
+            return False
+        return True
+
     def _generate_vllm(self, all_prompts: List[str], all_labels, **kwargs) -> List[Samples]:
         from vllm import SamplingParams
 
@@ -276,8 +282,10 @@ class SamplesGenerator:
                 prompts=batch_prompts,
                 labels=batch_labels,
             )
-            samples_list.append(rollout_samples)
-
+            if self.filter_batch_samples(rollout_samples):
+                # If the batch is valid, append to samples list
+                samples_list.append(rollout_samples)
+        print(f"Generated {len(samples_list)} valid samples from {len(all_outputs)} outputs.")
         return samples_list
 
 
