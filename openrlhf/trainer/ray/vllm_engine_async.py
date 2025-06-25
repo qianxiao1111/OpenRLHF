@@ -100,6 +100,7 @@ class LLMRayActorAsync(BaseLLMRayActor):
                 action_ranges = []
                 total_reward = 0
                 final_scores = 0
+                extra_logs = {}
 
                 # Execute multiple steps of interaction
                 for step_idx in range(max_steps):
@@ -115,26 +116,32 @@ class LLMRayActorAsync(BaseLLMRayActor):
                     # Generate response asynchronously
                     request_output = await self.generate_async(observation, sampling_params)
                     action = request_output.outputs[0].text
-                    action_ranges.append((len(observation), len(observation) + len(action)))
+                    action_ranges.append((len(observation), len(observation) + len(action))) # []
+                    if not action_ranges:
+                        print("Warning: No action_ranges found in output, using full observation length")
+                        print(action, "\n")
+                        print(observation, "\n")
 
                     # Call step function to get reward and next observation
                     # Use asyncio.to_thread to make Ray remote call non-blocking
                     kwargs = {"sampling_params": sampling_params}
                     result = await agent_instance.step.remote(observation, action, label, **kwargs)
-                    total_reward += result["rewards"].item()
-                    final_scores = result.get("scores", total_reward)
-                    observation = result["next_observation"]
-                    done = result["done"]
-                    extra_logs = result.get("extra_logs", {})
+                    reward, observation, done, label = result  # update states
+                    total_reward += reward.item()
+                    final_scores = total_reward
+                    # print(f"Step {step_idx + 1}: {result}")
+                    # total_reward += result["rewards"].item()
+                    # final_scores = result.get("scores", total_reward)
+                    # observation = result["next_observation"]
+                    # done = result["done"]
+                    # extra_logs = result.get("extra_logs", {})
 
                     # Get sampling params from the environment step
-                    if result.get("sampling_params", None):
-                        sampling_params = result["sampling_params"]
+                    # if result.get("sampling_params", None):
+                    #     sampling_params = result["sampling_params"]
 
                     if done:
                         break
-
-                ray.kill(agent_instance)
 
                 # Store the final response when agent execution is complete
                 final_response = {
@@ -147,6 +154,8 @@ class LLMRayActorAsync(BaseLLMRayActor):
                     "action_ranges": action_ranges,
                 }
                 await self.result_queue.put(final_response)
+                if agent_instance is not None:
+                    ray.kill(agent_instance)
 
         # Create and start tasks for all agent executions with controlled concurrency
         import copy

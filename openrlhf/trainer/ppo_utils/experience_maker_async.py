@@ -81,6 +81,9 @@ class SamplesGeneratorAsync(SamplesGenerator):
 
             # Convert action ranges to token indices
             tokenized_ranges = []
+            if not len(output["action_ranges"]):
+                print("warning: no action_ranges found in output, using full observation length")
+                print(output["observation"])
             for start, end in output["action_ranges"]:
                 # Get token indices for the entire observation up to end
                 full_tokens = self.tokenizer(
