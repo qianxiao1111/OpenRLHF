@@ -308,7 +308,7 @@ class SamplesGenerator:
         """
         from vllm import SamplingParams
 
-        llms = self.vllm_engines
+        llms = self.vllm_engines 
         args = self.strategy.args
 
         # Set up sampling parameters
