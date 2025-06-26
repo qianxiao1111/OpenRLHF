@@ -129,21 +129,14 @@ class LLMRayActorAsync(BaseLLMRayActor):
                     reward, observation, done, label = result  # update states
                     total_reward += reward.item()
                     final_scores = total_reward
-                    # print(f"Step {step_idx + 1}: {result}")
-                    # total_reward += result["rewards"].item()
-                    # final_scores = result.get("scores", total_reward)
-                    # observation = result["next_observation"]
-                    # done = result["done"]
-                    # extra_logs = result.get("extra_logs", {})
-
-                    # Get sampling params from the environment step
-                    # if result.get("sampling_params", None):
-                    #     sampling_params = result["sampling_params"]
 
                     if done:
                         break
 
                 # Store the final response when agent execution is complete
+                if label.get("tool", None) is not None:
+                    del label["tool"]
+
                 final_response = {
                     "prompt": prompt,
                     "label": label,
