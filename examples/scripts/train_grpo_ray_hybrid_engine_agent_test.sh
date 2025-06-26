@@ -1,5 +1,4 @@
 set -x
-
 export VLLM_USE_V1=0
 wandb_token=08c0f4579c7d16938b6090064549af2468fcdeb3
 export PYTHONPATH=/home/zjuici/zly/agentic-o1:$PYTHONPATH
@@ -24,10 +23,10 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --save_hf_ckpt \
    --save_steps 1000 \
    --micro_train_batch_size 1 \
-   --train_batch_size 8 \
-   --micro_rollout_batch_size 8 \
-   --rollout_batch_size 32 \
-   --n_samples_per_prompt 2 \
+   --train_batch_size 512 \
+   --micro_rollout_batch_size 4 \
+   --rollout_batch_size 128 \
+   --n_samples_per_prompt 4 \
    --max_epochs 2 \
    --prompt_max_len 4096 \
    --max_samples 1000000 \
@@ -51,10 +50,10 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --adam_offload \
    --deepspeed_enable_sleep \
    --flash_attn \
-   --kl_target 0.01 \
    --entropy_loss_coef 0.001 \
    --use_wandb $wandb_token
 
 # You could also try
 #   --kl_estimator k2 \
+# dont use kl_target , keep kl increasing
 
