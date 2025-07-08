@@ -152,3 +152,12 @@ core
 
 # wandb
 wandb/
+
+# csv files
+*.csv
+
+# png files
+*.png
+
+# txt files
+*.txt

@@ -134,9 +134,6 @@ class LLMRayActorAsync(BaseLLMRayActor):
                         break
 
                 # Store the final response when agent execution is complete
-                if label.get("tool", None) is not None:
-                    del label["tool"]
-
                 final_response = {
                     "prompt": prompt,
                     "label": label,

@@ -2,6 +2,9 @@ set -x
 export VLLM_USE_V1=0
 wandb_token=08c0f4579c7d16938b6090064549af2468fcdeb3
 export PYTHONPATH=/home/zjuici/zly/agentic-o1:$PYTHONPATH
+timestamp=$(date +"%Y%m%d_%H%M%S")
+save_path="/data/sft_outputs/rl_checkpoint/agentic_test_${timestamp}"
+ckpt_path="/data/sft_outputs/rl_checkpoint/agentic_test_${timestamp}"
 
 python3 -m openrlhf.cli.train_ppo_ray \
    --ref_num_nodes 1 \
@@ -11,22 +14,22 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --vllm_num_engines 2 \
    --vllm_tensor_parallel_size 1 \
    --vllm_gpu_memory_utilization 0.95 \
-   --init_kl_coef 1e-3 \
+   --init_kl_coef 1e-2 \
    --gamma 1.0 \
    --use_kl_loss \
    --kl_estimator k3 \
    --advantage_estimator group_norm \
-   --pretrain /data/model/Qwen2.5-7B-Instruct \
-   --agent_func_path /home/zjuici/zly/agentic-o1/rl_train/agent_func.py \
-   --save_path /data/sft_outputs/rl_checkpoint/agentic_test \
-   --ckpt_path /data/sft_outputs/rl_checkpoint/agentic_test \
+   --pretrain /data/sft_outputs/Qwen3-ins-0619v4_1e-5_2epoch \
+   --agent_func_path /home/zjuici/zly/agentic-o1/rl_train/agent_func_remote_tool.py \
+   --save_path $save_path \
+   --ckpt_path $ckpt_path \
    --save_hf_ckpt \
-   --save_steps 1000 \
+   --save_steps 50 \
    --micro_train_batch_size 1 \
-   --train_batch_size 512 \
-   --micro_rollout_batch_size 4 \
+   --train_batch_size 1024 \
+   --micro_rollout_batch_size 2 \
    --rollout_batch_size 128 \
-   --n_samples_per_prompt 4 \
+   --n_samples_per_prompt 8 \
    --max_epochs 2 \
    --prompt_max_len 4096 \
    --max_samples 1000000 \
@@ -35,11 +38,10 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --bf16 \
    --actor_learning_rate 1e-6 \
    --critic_learning_rate 9e-6 \
-   --prompt_data /home/zjuici/zly/filtered_data_messages.jsonl \
-   --input_key instruction \
+   --prompt_data /home/zjuici/zly/rl_0625_v5_sampled_4w_filtered_processed.jsonl \
+   --input_key msg \
    --label_key label \
    --apply_chat_template \
-   --normalize_reward \
    --gradient_checkpointing \
    --grad_accum_dtype bf16 \
    --packing_samples \
@@ -51,8 +53,10 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --deepspeed_enable_sleep \
    --flash_attn \
    --entropy_loss_coef 0.001 \
+   --normalize_reward \
    --use_wandb $wandb_token
 
+## --normalize_reward \
 # You could also try
 #   --kl_estimator k2 \
 # dont use kl_target , keep kl increasing
