@@ -19,14 +19,14 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --use_kl_loss \
    --kl_estimator k3 \
    --advantage_estimator group_norm \
-   --pretrain /data/sft_outputs/Qwen3-ins-0619v4_1e-5_2epoch \
+   --pretrain /data/sft_outputs/qwen3-8b-0704v5_1e-5_2epoch \
    --agent_func_path /home/zjuici/zly/agentic-o1/rl_train/agent_func_remote_tool.py \
    --save_path $save_path \
    --ckpt_path $ckpt_path \
    --save_hf_ckpt \
-   --save_steps 50 \
+   --save_steps 30 \
    --micro_train_batch_size 1 \
-   --train_batch_size 1024 \
+   --train_batch_size 32 \
    --micro_rollout_batch_size 2 \
    --rollout_batch_size 128 \
    --n_samples_per_prompt 8 \
@@ -54,10 +54,10 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --flash_attn \
    --entropy_loss_coef 0.001 \
    --normalize_reward \
-   --use_wandb $wandb_token
+   --temperature 0.6 \
+   --use_wandb $wandb_token \
 
 ## --normalize_reward \
 # You could also try
 #   --kl_estimator k2 \
 # dont use kl_target , keep kl increasing
-

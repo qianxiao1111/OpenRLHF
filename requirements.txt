@@ -23,3 +23,6 @@ transformers==4.54.1
 transformers_stream_generator
 wandb
 wheel
+# flash-attn==2.8.0.post2
+
+
