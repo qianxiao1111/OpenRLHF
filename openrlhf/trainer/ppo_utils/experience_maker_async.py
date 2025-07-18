@@ -72,12 +72,15 @@ class SamplesGeneratorAsync(SamplesGenerator):
         experiences_list = []
         for output in all_outputs:
             # Tokenize observation
-            observation_tokens = self.tokenizer(output["observation"], add_special_tokens=False, return_tensors="pt")[
-                "input_ids"
-            ][0]
+            observation_tokens = self.tokenizer(output["observation"], add_special_tokens=False, return_tensors="pt")["input_ids"][0]
             tokenized_observation = observation_tokens.tolist()
-            if observation_tokens[-1] != eos_token_id:
+            
+            done = output.get("done", False)
+            if observation_tokens[-1] != eos_token_id and done:
                 tokenized_observation.append(eos_token_id)
+
+            # if observation_tokens[-1] != eos_token_id:
+            #     tokenized_observation.append(eos_token_id)
 
             # Convert action ranges to token indices
             tokenized_ranges = []

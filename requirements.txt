@@ -3,7 +3,6 @@ bitsandbytes
 datasets
 deepspeed==0.17.1
 einops
-flash-attn==2.8.0.post2
 isort
 jsonlines
 loralib
@@ -22,3 +21,6 @@ transformers==4.52.4
 transformers_stream_generator
 wandb
 wheel
+# flash-attn==2.8.0.post2
+
+

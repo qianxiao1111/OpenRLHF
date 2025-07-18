@@ -142,6 +142,7 @@ class LLMRayActorAsync(BaseLLMRayActor):
                     "scores": final_scores,
                     "extra_logs": extra_logs,
                     "action_ranges": action_ranges,
+                    "done": done
                 }
                 await self.result_queue.put(final_response)
                 if agent_instance is not None:
