@@ -87,7 +87,8 @@ class LLMRayActorAsync(BaseLLMRayActor):
         """
 
         # Create semaphore to control concurrent task execution
-        NUM_TASKS = os.environ.get("OPENRLHF_ASYNC_NUM_TASKS", 128)
+        NUM_TASKS = os.environ.get("OPENRLHF_ASYNC_NUM_TASKS", 128) # rollout batch size?
+        # NUM_TASKS = 32 # 限制并发数量
         semaphore = asyncio.Semaphore(NUM_TASKS)
 
         async def execute_agent(prompt, label, sampling_params):
@@ -126,8 +127,8 @@ class LLMRayActorAsync(BaseLLMRayActor):
                     # Use asyncio.to_thread to make Ray remote call non-blocking
                     kwargs = {"sampling_params": sampling_params}
                     result = await agent_instance.step.remote(observation, action, label, **kwargs)
-                    reward, observation, done, label = result  # update states
-                    total_reward += reward.item()
+                    reward, observation, done, label = result # update states
+                    total_reward = total_reward + reward
                     final_scores = total_reward
 
                     if done:

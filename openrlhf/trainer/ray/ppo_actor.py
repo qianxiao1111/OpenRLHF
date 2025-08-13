@@ -71,6 +71,7 @@ class ActorPPOTrainer(ABC):
         self.actor_loss_fn = PolicyLoss(
             clip_eps_low=self.args.eps_clip_low_high[0],
             clip_eps_high=self.args.eps_clip_low_high[1],
+            use_gspo=self.args.use_gspo,
         )
 
         # Mixtral 8x7b
@@ -158,6 +159,7 @@ class ActorPPOTrainer(ABC):
 
         status_list = []
         status_mean = {}
+        torch.autograd.set_detect_anomaly(True)
         for epoch in range(self.max_epochs):
             pbar = tqdm(
                 dataloader,
@@ -247,12 +249,15 @@ class ActorPPOTrainer(ABC):
             loss += output.aux_loss * self.args.aux_loss_coef
         # entropy loss
         if self.args.entropy_loss_coef is not None:
+            # entropy_loss = torch.tensor(0.)
             entropy_loss = masked_mean(output.entropy[:, -experience.action_mask.shape[1] :], experience.action_mask)
             if self.args.entropy_loss_coef != 0:
-                loss -= entropy_loss * self.args.entropy_loss_coef
-
+                loss = loss - entropy_loss * self.args.entropy_loss_coef
+                # loss -= entropy_loss * self.args.entropy_loss_coef
+ 
         self.strategy.backward(loss, self.actor, self.actor_optim)
         self.strategy.optimizer_step(self.actor_optim, self.actor, self.actor_scheduler, name="actor")
+
         if self.ema_model:
             self.strategy.moving_average(self.actor, self.ema_model, self.ema_beta, "cuda")
 
@@ -493,6 +498,7 @@ class PolicyModelActor(BaseModelActor):
         """Generates actor values."""
         device = torch.cuda.current_device()
         self.actor.eval()
+        
         with torch.no_grad():
             action_log_probs = self.actor(
                 sequences.to(device),
