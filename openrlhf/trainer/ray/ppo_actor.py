@@ -171,6 +171,7 @@ class ActorPPOTrainer(ABC):
 
         status_list = []
         status_mean = {}
+        torch.autograd.set_detect_anomaly(True)
         for epoch in range(self.max_epochs):
             pbar = tqdm(
                 dataloader,
@@ -265,6 +266,7 @@ class ActorPPOTrainer(ABC):
             loss += output.aux_loss * self.args.aux_loss_coef
         # entropy loss
         if self.args.entropy_loss_coef is not None:
+            # entropy_loss = torch.tensor(0.)
             entropy_loss = masked_mean(output.entropy[:, -experience.action_mask.shape[1] :], experience.action_mask)
             if self.args.entropy_loss_coef != 0:
                 loss -= entropy_loss * self.args.entropy_loss_coef
@@ -523,6 +525,7 @@ class PolicyModelActor(BaseModelActor):
         """Generates actor values."""
         device = torch.cuda.current_device()
         self.actor.eval()
+        
         with torch.no_grad():
             action_log_probs = self.actor(
                 sequences.to(device),

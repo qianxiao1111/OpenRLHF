@@ -404,6 +404,13 @@ if __name__ == "__main__":
         "It should be a divisor of the number of heads. "
         "A larger value may results in faster training but will consume more memory.",
     )
+    parser.add_argument(
+        "--use_gspo",
+        type=bool,
+        default=False,
+        help="GSPO is a variant of PPO that uses a different loss function. "
+        "When set to True, it will use GSPO loss instead of PPO loss.",
+    )
 
     #  Models
     parser.add_argument("--pretrain", type=str, default=None, help="HF model name or path")

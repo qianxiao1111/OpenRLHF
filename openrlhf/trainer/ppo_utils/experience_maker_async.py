@@ -2,6 +2,7 @@ from typing import List
 
 import ray
 import torch
+import random
 
 from openrlhf.trainer.ppo_utils.experience_maker import Experience, SamplesGenerator
 

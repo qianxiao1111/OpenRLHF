@@ -1,10 +1,12 @@
 set -x
 export VLLM_USE_V1=0
 wandb_token=08c0f4579c7d16938b6090064549af2468fcdeb3
-export PYTHONPATH=/home/zjuici/zly/agentic-o1:$PYTHONPATH
+export PYTHONPATH=/mnt/zheda/default/zly/agentic-o1:$PYTHONPATH
+# export RAY_ADDRESS=auto
 timestamp=$(date +"%Y%m%d_%H%M%S")
-save_path="/data/sft_outputs/rl_checkpoint/agentic_test_${timestamp}"
-ckpt_path="/data/sft_outputs/rl_checkpoint/agentic_test_${timestamp}"
+save_path="/mnt/zheda/default/rl_outputs/agentic_test_${timestamp}"
+ckpt_path="/mnt/zheda/default/rl_outputs/agentic_test_${timestamp}"
+
 
 python3 -m openrlhf.cli.train_ppo_ray \
    --ref_num_nodes 1 \
@@ -19,15 +21,15 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --use_kl_loss \
    --kl_estimator k3 \
    --advantage_estimator group_norm \
-   --pretrain /data/sft_outputs/qwen3-8b-0704v5_1e-5_2epoch \
-   --agent_func_path /home/zjuici/zly/agentic-o1/rl_train/agent_func_remote_tool.py \
+   --pretrain /mnt/zheda/default/models/sft_output/global_step60_hf \
+   --agent_func_path /mnt/zheda/default/zly/agentic-o1/rl_train/agent_func_remote_tool.py \
    --save_path $save_path \
    --ckpt_path $ckpt_path \
    --save_hf_ckpt \
    --save_steps 30 \
-   --micro_train_batch_size 1 \
-   --train_batch_size 32 \
-   --micro_rollout_batch_size 2 \
+   --micro_train_batch_size 4 \
+   --train_batch_size 1024 \
+   --micro_rollout_batch_size 4 \
    --rollout_batch_size 128 \
    --n_samples_per_prompt 8 \
    --max_epochs 2 \
@@ -38,7 +40,7 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --bf16 \
    --actor_learning_rate 1e-6 \
    --critic_learning_rate 9e-6 \
-   --prompt_data /home/zjuici/zly/rl_0625_v5_sampled_4w_filtered_processed.jsonl \
+   --prompt_data /mnt/zheda/default/zly/rl_0724_v5_sampled_processed.jsonl \
    --input_key msg \
    --label_key label \
    --apply_chat_template \
@@ -52,12 +54,13 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --adam_offload \
    --deepspeed_enable_sleep \
    --flash_attn \
-   --entropy_loss_coef 0.001 \
    --normalize_reward \
    --temperature 0.6 \
    --use_wandb $wandb_token \
 
+# --entropy_loss_coef 0.001 \d
 ## --normalize_reward \
+
 # You could also try
 #   --kl_estimator k2 \
 # dont use kl_target , keep kl increasing
