@@ -10,26 +10,26 @@ ckpt_path="/mnt/zheda/default/rl_outputs/agentic_test_${timestamp}"
 
 python3 -m openrlhf.cli.train_ppo_ray \
    --ref_num_nodes 1 \
-   --ref_num_gpus_per_node 1 \
+   --ref_num_gpus_per_node 0 \
    --actor_num_nodes 1 \
-   --actor_num_gpus_per_node 4 \
-   --vllm_num_engines 4 \
-   --vllm_tensor_parallel_size 1 \
+   --actor_num_gpus_per_node 8 \
+   --vllm_num_engines 1 \
+   --vllm_tensor_parallel_size 8 \
    --init_kl_coef 0.0 \
-   --vllm_gpu_memory_utilization 0.95 \
+   --vllm_gpu_memory_utilization 0.9 \
    --gamma 1.0 \
    --eps_clip_low_high 0.2 0.3 \
    --kl_estimator k1 \
    --advantage_estimator group_norm \
    --pretrain /mnt/zheda/default/models/sft_output/global_step60_hf \
-   --agent_func_path /mnt/zheda/default/zly/agentic-o1/rl_train/agent_func_remote_tool.py \
+   --agent_func_path /mnt/zheda/default/zly/agentic-o1/rl_train/agent_func.py \
    --save_path $save_path \
    --ckpt_path $ckpt_path \
    --save_hf_ckpt \
    --save_steps 30 \
-   --micro_train_batch_size 4 \
+   --micro_train_batch_size 8 \
    --train_batch_size 2048 \
-   --micro_rollout_batch_size 4 \
+   --micro_rollout_batch_size 256 \
    --rollout_batch_size 256 \
    --n_samples_per_prompt 8 \
    --max_epochs 2 \
@@ -38,7 +38,7 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --generate_max_len 8192 \
    --zero_stage 3 \
    --bf16 \
-   --actor_learning_rate 1e-6  \
+   --actor_learning_rate 2e-6  \
    --critic_learning_rate 9e-6 \
    --prompt_data /mnt/zheda/default/zly/rl_0724_v5_sampled_processed.jsonl \
    --input_key msg \
@@ -55,7 +55,9 @@ python3 -m openrlhf.cli.train_ppo_ray \
    --deepspeed_enable_sleep \
    --temperature 1.0 \
    --flash_attn \
-   --use_wandb $wandb_token \
+   --colocate_all_models \
+   --use_dynamic_batch \
+   # --use_wandb $wandb_token \
 
 ## Clip High (DAPO): Increasing the upper bound of GRPO/PPO’s surrogate loss encourages exploration and stabilizes entropy.
 ## No KL Loss (DAPO): Eliminating KL loss prevents the LLM from being constrained to the trust region of the original SFT model.

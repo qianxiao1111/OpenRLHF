@@ -4,10 +4,9 @@ from abc import ABC, abstractmethod
 import ray
 from vllm.inputs import TokensPrompt
 
-
 class AgentInstanceBase(ABC):
     @abstractmethod
-    async def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         pass
 
     async def reset(self, states: dict, **kwargs):
@@ -29,7 +28,7 @@ class AgentExecutorBase(ABC):
         self.agent_instance_cls = ray.remote(agent_instance_cls)
 
         # Create semaphore to control concurrent task execution
-        NUM_TASKS = os.environ.get("OPENRLHF_ASYNC_NUM_TASKS", 128)
+        NUM_TASKS = os.environ.get("OPENRLHF_ASYNC_NUM_TASKS", 256)
         self.semaphore = asyncio.Semaphore(NUM_TASKS)
 
     async def generate(self, prompt_ids, sampling_params):
@@ -103,6 +102,7 @@ class AgentExecutorBase(ABC):
 
                 # Concatenate observation, action, and environment_feedback, then tokenize
                 observation_text = observation_text + action_text + environment_feedback_text
+                
                 current_obs_tokens = (
                     current_obs_tokens
                     + action_tokens
